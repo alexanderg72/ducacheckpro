@@ -1,0 +1,6 @@
+@LectorDocumentosIA_HostAddress = http://localhost:5058
+
+GET {{LectorDocumentosIA_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

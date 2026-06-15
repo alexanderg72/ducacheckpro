@@ -1,0 +1,569 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duca Check Pro - Panel Admin</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0d52a1;
+            --primary-dark: #092a54;
+            --text-dark: #222222;
+            --border: #e0e0e0;
+            --bg-modal: rgba(0,0,0,0.6);
+        }
+
+        body, html {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Imagen de fondo fijada para que no se mueva al hacer scroll */
+            background-image: url('img/fondo-puerto.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Capa oscura sobre la imagen de fondo */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(9, 42, 84, 0.7) 0%, rgba(9, 42, 84, 0.95) 100%);
+            z-index: -1;
+        }
+
+        /* --- ESTILOS DEL ENCABEZADO --- */
+        header {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 15px 40px;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            flex: 1;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .header-center {
+            flex: 2;
+            text-align: center;
+        }
+
+            .header-center h2 {
+                margin: 0;
+                font-family: 'Montserrat', sans-serif;
+                color: var(--primary-dark);
+                font-size: 1.6rem;
+                font-weight: 800;
+                letter-spacing: -0.5px;
+            }
+
+        .header-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* --- ESTILOS DE BOTONES --- */
+        .btn, .header-btn {
+            background-color: transparent;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+        }
+
+            .btn-primary:hover {
+                background-color: var(--primary-dark);
+                box-shadow: 0 4px 10px rgba(13, 82, 161, 0.3);
+            }
+
+        .btn-danger {
+            color: #d13438;
+            border: 1px solid #d13438;
+        }
+
+            .btn-danger:hover {
+                background-color: #d13438;
+                color: white;
+                box-shadow: 0 4px 10px rgba(209, 52, 56, 0.3);
+            }
+
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+            background: white;
+        }
+
+            .btn-outline:hover {
+                background-color: #f3f2f1;
+                border-color: #c8c6c4;
+            }
+
+        /* --- CONTENEDOR Y TARJETAS --- */
+        .container {
+            width: 96%;
+            max-width: 1600px; /* Adaptable a pantallas grandes */
+            margin: 30px auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+            .card h3 {
+                margin-top: 0;
+                font-family: 'Montserrat', sans-serif;
+                color: var(--primary-dark);
+                font-size: 1.3rem;
+                margin-bottom: 20px;
+                border-bottom: 2px solid var(--border);
+                padding-bottom: 10px;
+            }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input, select {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            min-width: 200px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+            input:focus, select:focus {
+                border-color: var(--primary);
+            }
+
+        /* --- TABLAS --- */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            white-space: nowrap;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* --- MODALES --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-modal);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+            .modal-content h3 {
+                border-bottom: none;
+            }
+
+            .modal-content input, .modal-content select {
+                width: 100%;
+                box-sizing: border-box;
+                margin-bottom: 20px;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="bg-overlay"></div>
+
+    <header>
+        <div class="header-left">
+            <img src="img/ASIMEX LOGO2.jpeg" alt="Logo Grupo ASIMEX" class="logo">
+        </div>
+
+        <div class="header-center">
+            <h2>Panel de Administrador</h2>
+        </div>
+
+        <div class="header-right">
+            <a href="index.html" class="header-btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Consultar Duca</a>
+            <button onclick="logout()" class="header-btn btn-danger"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+            <h3><i class="fa-solid fa-user-plus"></i> Crear Nuevo Usuario</h3>
+            <div class="form-row">
+                <input type="text" id="newUsername" placeholder="Nombre de Usuario">
+                <input type="password" id="newPassword" placeholder="Contraseña">
+                <select id="newRole">
+                    <option value="Usuario">Usuario Estándar</option>
+                    <option value="Administrador">Administrador</option>
+                </select>
+                <button onclick="crearUsuario()" class="btn btn-primary"><i class="fa-solid fa-check"></i> Registrar Usuario</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-users-gear"></i> Usuarios en el Sistema</h3>
+            <div class="table-responsive">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Contraseña</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-microchip"></i> Consumo de Tokens IA</h3>
+            <p style="font-size: 0.9rem; color: #605e5c; margin-top: -10px; margin-bottom: 20px;">Monitoreo de gasto estimado por usuario.</p>
+            <div class="table-responsive">
+                <table id="tokensTable">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Tokens Consumidos</th>
+                            <th>N° de Consultas</th>
+                            <th>Última Actividad</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="roleModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--primary);"><i class="fa-solid fa-user-shield"></i> Cambiar Rol</h3>
+            <p id="modalUserName" style="font-weight: 600; margin-bottom: 15px;"></p>
+
+            <label style="display:block; margin-bottom: 5px; font-size: 0.9rem;">Seleccione el nuevo rol:</label>
+            <select id="modalRoleSelect">
+                <option value="Usuario">Usuario Estándar</option>
+                <option value="Administrador">Administrador</option>
+            </select>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="cerrarModal()" class="btn btn-outline">Cancelar</button>
+                <button onclick="guardarNuevoRol()" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--primary);"><i class="fa-solid fa-key"></i> Cambiar Contraseña</h3>
+            <p id="modalPassUserName" style="font-weight: 600; margin-bottom: 15px;"></p>
+
+            <label style="display:block; margin-bottom: 5px; font-size: 0.9rem;">Escriba la nueva contraseña:</label>
+            <input type="text" id="newPassInput" placeholder="Nueva clave...">
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="cerrarModalClave()" class="btn btn-outline">Cancelar</button>
+                <button onclick="guardarNuevaClave()" class="btn btn-primary">Guardar Clave</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('jwtToken');
+        if (!token || localStorage.getItem('userRole') !== 'Administrador') {
+            window.location.href = '/login.html';
+        }
+
+        let usuarioEditandoId = null;
+        let usuarioEditandoClaveId = null;
+
+        async function cargarUsuarios() {
+            const response = await fetch('/api/Admin/usuarios', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const users = await response.json();
+                const tbody = document.querySelector('#usersTable tbody');
+
+                tbody.innerHTML = users.map(u => `
+                        <tr>
+                            <td><strong>${u.nombre}</strong></td>
+                            <td><span style="font-family: monospace; background:#f3f2f1; padding:4px 8px; border-radius:4px; font-size: 0.9rem;">${u.clave || '***'}</span></td>
+                            <td><b>${u.rol}</b></td>
+                            <td>
+                                <span style="background-color: ${u.estado ? '#dff6dd' : '#fde7e9'}; color: ${u.estado ? '#107c10' : '#d13438'}; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">
+                                    ${u.estado ? 'Activo' : 'Inactivo'}
+                                </span>
+                            </td>
+                            <td>${new Date(u.creado).toLocaleDateString()}</td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="abrirModalRol(${u.id}, '${u.nombre}', '${u.rol}')" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-user-shield"></i> Rol</button>
+
+                                    <button onclick="abrirModalClave(${u.id}, '${u.nombre}')" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-key"></i> Clave</button>
+
+                                    <button onclick="cambiarEstado(${u.id}, ${u.estado})" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background-color: ${u.estado ? '#d13438' : '#107c10'}; color: white;">
+                                        <i class="fa-solid ${u.estado ? 'fa-ban' : 'fa-check'}"></i> ${u.estado ? 'Desactivar' : 'Activar'}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+            }
+        }
+
+        // Funciones del Modal de Contraseñas
+        function abrirModalClave(id, nombre) {
+            usuarioEditandoClaveId = id;
+            document.getElementById('modalPassUserName').innerText = `Usuario: ${nombre}`;
+            document.getElementById('newPassInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+
+        function cerrarModalClave() {
+            document.getElementById('passwordModal').style.display = 'none';
+            usuarioEditandoClaveId = null;
+        }
+
+        async function guardarNuevaClave() {
+            if (!usuarioEditandoClaveId) return;
+            const nuevaClave = document.getElementById('newPassInput').value;
+
+            if (nuevaClave.trim() === "") {
+                alert("La contraseña no puede estar vacía.");
+                return;
+            }
+
+            const response = await fetch('/api/Admin/cambiar-clave', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ Id: usuarioEditandoClaveId, NuevaClave: nuevaClave })
+            });
+
+            if (response.ok) {
+                alert("Contraseña actualizada correctamente.");
+                cerrarModalClave();
+                cargarUsuarios();
+            } else {
+                alert("Error al actualizar la contraseña.");
+            }
+        }
+
+        async function cargarReporteTokens() {
+            const response = await fetch('/api/Admin/reporte-tokens', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const reporte = await response.json();
+                const tbody = document.querySelector('#tokensTable tbody');
+
+                tbody.innerHTML = reporte.map(r => `
+                        <tr>
+                            <td><strong>${r.usuario}</strong></td>
+                            <td><b style="color: #d13438; font-size: 1.1rem;">${r.totalTokens.toLocaleString()}</b></td>
+                            <td>${r.consultas}</td>
+                            <td>${new Date(r.ultimaActividad).toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+            }
+        }
+
+        async function crearUsuario() {
+            const user = document.getElementById('newUsername').value;
+            const pass = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+
+            if (!user || !pass) return alert("Por favor, llena usuario y contraseña.");
+
+            const response = await fetch('/api/Admin/crear-usuario', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ Username: user, Password: pass, Role: role })
+            });
+
+            if (response.ok) {
+                alert("Usuario creado exitosamente");
+                document.getElementById('newUsername').value = "";
+                document.getElementById('newPassword').value = "";
+                cargarUsuarios();
+            } else {
+                alert("Hubo un error al crear el usuario.");
+            }
+        }
+
+        async function cambiarEstado(id, estadoActual) {
+            const nuevoEstado = !estadoActual;
+            const confirmacion = confirm(`¿Estás seguro de que deseas ${nuevoEstado ? 'activar' : 'desactivar'} este usuario?`);
+
+            if (!confirmacion) return;
+
+            const response = await fetch('/api/Admin/cambiar-estado', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ Id: id, Estado: nuevoEstado })
+            });
+
+            if (response.ok) {
+                cargarUsuarios();
+            } else {
+                alert("Error al cambiar el estado.");
+            }
+        }
+
+        function abrirModalRol(id, nombre, rolActual) {
+            usuarioEditandoId = id;
+            document.getElementById('modalUserName').innerText = `Usuario: ${nombre}`;
+            document.getElementById('modalRoleSelect').value = rolActual;
+            document.getElementById('roleModal').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('roleModal').style.display = 'none';
+            usuarioEditandoId = null;
+        }
+
+        async function guardarNuevoRol() {
+            if (!usuarioEditandoId) return;
+
+            const nuevoRol = document.getElementById('modalRoleSelect').value;
+
+            const response = await fetch('/api/Admin/editar-rol', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ Id: usuarioEditandoId, Role: nuevoRol })
+            });
+
+            if (response.ok) {
+                cerrarModal();
+                cargarUsuarios();
+            } else {
+                alert("Error al actualizar el rol.");
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        cargarUsuarios();
+        cargarReporteTokens();
+    </script>
+</body>
+</html>
