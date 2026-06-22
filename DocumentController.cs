@@ -4,11 +4,11 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Text;
-using System.Linq; // Necesario para buscar al usuario
+using System.Linq; 
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims; // Necesario para los Claims
-using Microsoft.Data.SqlClient; // Necesario para la base de datos
-using Microsoft.Extensions.Configuration; // Necesario para leer el appsettings.json
+using System.Security.Claims; 
+using Microsoft.Data.SqlClient; 
+using Microsoft.Extensions.Configuration; 
 
 namespace LectorDocumentosIA
 {
@@ -114,7 +114,7 @@ namespace LectorDocumentosIA
             var respuestaFinal = await _aiService.GetAnswerAsync(contextoTotal.ToString(), model.Question);
 
             // ========================================================
-            // 3. REGISTRO DE CONSUMO DE TOKENS EN SQL
+            // 3. REGISTRO DE CONSUMO DE TOKENS E HISTORIAL EN SQL
             // ========================================================
             string errorDeBaseDatos = string.Empty;
             try
@@ -147,12 +147,34 @@ namespace LectorDocumentosIA
                 // Guardar en la base de datos
                 using (SqlConnection conn = new SqlConnection(_connectionString))
                 {
-                    SqlCommand cmd = new SqlCommand("sp_RegistrarConsumo", conn);
-                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@NombreUsuario", usuarioLogueado);
-                    cmd.Parameters.AddWithValue("@Tokens", tokensEstimados);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    conn.Open(); // Abrimos la conexión una sola vez para ambos comandos
+
+                    // 3.1 Registrar consumo de tokens (Tu código original)
+                    using (SqlCommand cmdTokens = new SqlCommand("sp_RegistrarConsumo", conn))
+                    {
+                        cmdTokens.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmdTokens.Parameters.AddWithValue("@NombreUsuario", usuarioLogueado);
+                        cmdTokens.Parameters.AddWithValue("@Tokens", tokensEstimados);
+                        cmdTokens.ExecuteNonQuery();
+                    }
+
+                    // 3.2 NUEVO: Registrar el historial de la consulta
+                    string queryHistorial = @"
+                        INSERT INTO HistorialConsultas (UsuarioId, Pregunta, RespuestaIA, NombresArchivos, FechaConsulta)
+                        VALUES (@Usuario, @Pregunta, @Respuesta, @Archivos, GETDATE())";
+
+                    using (SqlCommand cmdHistorial = new SqlCommand(queryHistorial, conn))
+                    {
+                        cmdHistorial.Parameters.AddWithValue("@Usuario", usuarioLogueado);
+                        cmdHistorial.Parameters.AddWithValue("@Pregunta", string.IsNullOrEmpty(model.Question) ? "Análisis de documento sin instrucción específica" : model.Question);
+                        cmdHistorial.Parameters.AddWithValue("@Respuesta", respuestaFinal);
+                        
+                        // Extraer nombres de archivos separados por comas si existen
+                        string nombresArchivos = hasFiles ? string.Join(", ", model.Files!.Select(f => f.FileName)) : "Ninguno";
+                        cmdHistorial.Parameters.AddWithValue("@Archivos", nombresArchivos);
+
+                        cmdHistorial.ExecuteNonQuery();
+                    }
                 }
             }
             catch (Exception ex)
@@ -163,7 +185,7 @@ namespace LectorDocumentosIA
             // Si hay un error de SQL, lo mostramos al final de la respuesta de la IA
             if (!string.IsNullOrEmpty(errorDeBaseDatos))
             {
-                respuestaFinal += $"\n\n\n---\n⚠️ **Nota del Sistema:** El documento se procesó correctamente, pero no se pudo registrar el consumo en SQL Server. El error devuelto fue:\n*\"{errorDeBaseDatos}\"*";
+                respuestaFinal += $"\n\n\n---\n⚠️ **Nota del Sistema:** El documento se procesó correctamente, pero no se pudo registrar el consumo/historial en SQL Server. El error devuelto fue:\n*\"{errorDeBaseDatos}\"*";
             }
 
             return Ok(new { answer = respuestaFinal });

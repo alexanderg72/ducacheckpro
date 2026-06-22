@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         :root {
             --primary: #0d52a1;
@@ -15,6 +18,8 @@
             --text-dark: #222222;
             --border: #e0e0e0;
             --bg-modal: rgba(0,0,0,0.6);
+            --excel-green: #107c41;
+            --pdf-red: #a63b3c;
         }
 
         body, html {
@@ -25,14 +30,12 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Imagen de fondo fijada para que no se mueva al hacer scroll */
             background-image: url('img/fondo-puerto.jpeg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
 
-        /* Capa oscura sobre la imagen de fondo */
         .bg-overlay {
             position: fixed;
             top: 0;
@@ -43,7 +46,6 @@
             z-index: -1;
         }
 
-        /* --- ESTILOS DEL ENCABEZADO --- */
         header {
             width: 100%;
             background: rgba(255, 255, 255, 0.98);
@@ -93,7 +95,6 @@
             align-items: center;
         }
 
-        /* --- ESTILOS DE BOTONES --- */
         .btn, .header-btn {
             background-color: transparent;
             padding: 10px 18px;
@@ -143,10 +144,9 @@
                 border-color: #c8c6c4;
             }
 
-        /* --- CONTENEDOR Y TARJETAS --- */
         .container {
             width: 96%;
-            max-width: 1600px; /* Adaptable a pantallas grandes */
+            max-width: 1600px;
             margin: 30px auto;
             flex-grow: 1;
             display: flex;
@@ -195,7 +195,6 @@
                 border-color: var(--primary);
             }
 
-        /* --- TABLAS --- */
         .table-responsive {
             overflow-x: auto;
         }
@@ -231,7 +230,6 @@
             background-color: #f8f9fa;
         }
 
-        /* --- MODALES --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -264,21 +262,128 @@
                 box-sizing: border-box;
                 margin-bottom: 20px;
             }
+
+        .response-content {
+            max-height: 250px;
+            overflow-y: auto;
+            background: #f4f6f9;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+            .response-content table {
+                font-size: 0.85rem;
+                margin-top: 10px;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+        .user-tag {
+            background: #e1f0ff;
+            color: var(--primary-dark);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .btn-action-download {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        /* ========================================================
+           LA SOLUCIÓN NATIVA PARA EL PDF
+           ======================================================== */
+        #pdfRenderArea {
+            display: none;
+        }
+
+        @media print {
+            /* 1. Ocultar todos los elementos web normales */
+            body * {
+                visibility: hidden;
+            }
+
+            body, html {
+                background: white !important;
+                background-image: none !important;
+            }
+
+            .bg-overlay {
+                display: none !important;
+            }
+
+            /* 2. Mostrar únicamente el área de impresión nativa */
+            #pdfRenderArea, #pdfRenderArea * {
+                visibility: visible;
+            }
+
+            #pdfRenderArea {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 15px;
+                color: black;
+                font-family: 'Inter', sans-serif;
+            }
+
+                /* 3. Forzar estilos de alta calidad para las tablas y colores */
+                #pdfRenderArea table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+
+                #pdfRenderArea th, #pdfRenderArea td {
+                    border: 1px solid #ddd;
+                    padding: 10px;
+                    text-align: left;
+                    font-size: 0.9rem;
+                }
+
+                #pdfRenderArea th {
+                    background-color: #092a54 !important;
+                    color: white !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+
+                #pdfRenderArea .layout-table th, #pdfRenderArea .layout-table td {
+                    border: none !important;
+                    padding: 5px 0 !important;
+                }
+
+                #pdfRenderArea .info-box {
+                    background-color: #e1f0ff !important;
+                    border-left: 5px solid #0d52a1 !important;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+        }
     </style>
 </head>
 <body>
 
     <div class="bg-overlay"></div>
 
+    <div id="pdfRenderArea"></div>
+
     <header>
         <div class="header-left">
             <img src="img/ASIMEX LOGO2.jpeg" alt="Logo Grupo ASIMEX" class="logo">
         </div>
-
         <div class="header-center">
             <h2>Panel de Administrador</h2>
         </div>
-
         <div class="header-right">
             <a href="index.html" class="header-btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Consultar Duca</a>
             <button onclick="logout()" class="header-btn btn-danger"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
@@ -336,19 +441,46 @@
                 </table>
             </div>
         </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial y Auditoría de Consultas IA</h3>
+
+            <div class="form-row" style="margin-bottom: 15px;">
+                <label for="userFilter" style="font-weight: 600;"><i class="fa-solid fa-filter"></i> Filtrar por Usuario:</label>
+                <select id="userFilter" style="min-width: 250px;">
+                    <option value="todos">Todos los usuarios</option>
+                </select>
+            </div>
+
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table id="historialTable">
+                    <thead>
+                        <tr>
+                            <th style="position: sticky; top: 0; z-index: 10; width: 12%;">Fecha</th>
+                            <th style="position: sticky; top: 0; z-index: 10; width: 15%;">Usuario</th>
+                            <th style="position: sticky; top: 0; z-index: 10; width: 18%;">Documentos</th>
+                            <th style="position: sticky; top: 0; z-index: 10; width: 20%;">Instrucción</th>
+                            <th style="position: sticky; top: 0; z-index: 10; width: 35%;">Respuesta IA / Exportar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialTbody">
+                        <tr><td colspan="5" style="text-align:center;">Cargando historial...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <div id="roleModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top: 0; color: var(--primary);"><i class="fa-solid fa-user-shield"></i> Cambiar Rol</h3>
             <p id="modalUserName" style="font-weight: 600; margin-bottom: 15px;"></p>
-
             <label style="display:block; margin-bottom: 5px; font-size: 0.9rem;">Seleccione el nuevo rol:</label>
             <select id="modalRoleSelect">
                 <option value="Usuario">Usuario Estándar</option>
                 <option value="Administrador">Administrador</option>
             </select>
-
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button onclick="cerrarModal()" class="btn btn-outline">Cancelar</button>
                 <button onclick="guardarNuevoRol()" class="btn btn-primary">Guardar Cambios</button>
@@ -360,10 +492,8 @@
         <div class="modal-content">
             <h3 style="margin-top: 0; color: var(--primary);"><i class="fa-solid fa-key"></i> Cambiar Contraseña</h3>
             <p id="modalPassUserName" style="font-weight: 600; margin-bottom: 15px;"></p>
-
             <label style="display:block; margin-bottom: 5px; font-size: 0.9rem;">Escriba la nueva contraseña:</label>
             <input type="text" id="newPassInput" placeholder="Nueva clave...">
-
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button onclick="cerrarModalClave()" class="btn btn-outline">Cancelar</button>
                 <button onclick="guardarNuevaClave()" class="btn btn-primary">Guardar Clave</button>
@@ -379,99 +509,35 @@
 
         let usuarioEditandoId = null;
         let usuarioEditandoClaveId = null;
+        let datosHistorial = [];
 
         async function cargarUsuarios() {
-            const response = await fetch('/api/Admin/usuarios', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await fetch('/api/Admin/usuarios', { headers: { 'Authorization': `Bearer ${token}` } });
             if (response.ok) {
                 const users = await response.json();
                 const tbody = document.querySelector('#usersTable tbody');
-
                 tbody.innerHTML = users.map(u => `
-                        <tr>
-                            <td><strong>${u.nombre}</strong></td>
-                            <td><span style="font-family: monospace; background:#f3f2f1; padding:4px 8px; border-radius:4px; font-size: 0.9rem;">${u.clave || '***'}</span></td>
-                            <td><b>${u.rol}</b></td>
-                            <td>
-                                <span style="background-color: ${u.estado ? '#dff6dd' : '#fde7e9'}; color: ${u.estado ? '#107c10' : '#d13438'}; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">
-                                    ${u.estado ? 'Activo' : 'Inactivo'}
-                                </span>
-                            </td>
-                            <td>${new Date(u.creado).toLocaleDateString()}</td>
-                            <td>
-                                <div style="display: flex; gap: 8px;">
-                                    <button onclick="abrirModalRol(${u.id}, '${u.nombre}', '${u.rol}')" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-user-shield"></i> Rol</button>
-
-                                    <button onclick="abrirModalClave(${u.id}, '${u.nombre}')" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-key"></i> Clave</button>
-
-                                    <button onclick="cambiarEstado(${u.id}, ${u.estado})" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background-color: ${u.estado ? '#d13438' : '#107c10'}; color: white;">
-                                        <i class="fa-solid ${u.estado ? 'fa-ban' : 'fa-check'}"></i> ${u.estado ? 'Desactivar' : 'Activar'}
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('');
-            }
-        }
-
-        // Funciones del Modal de Contraseñas
-        function abrirModalClave(id, nombre) {
-            usuarioEditandoClaveId = id;
-            document.getElementById('modalPassUserName').innerText = `Usuario: ${nombre}`;
-            document.getElementById('newPassInput').value = '';
-            document.getElementById('passwordModal').style.display = 'flex';
-        }
-
-        function cerrarModalClave() {
-            document.getElementById('passwordModal').style.display = 'none';
-            usuarioEditandoClaveId = null;
-        }
-
-        async function guardarNuevaClave() {
-            if (!usuarioEditandoClaveId) return;
-            const nuevaClave = document.getElementById('newPassInput').value;
-
-            if (nuevaClave.trim() === "") {
-                alert("La contraseña no puede estar vacía.");
-                return;
-            }
-
-            const response = await fetch('/api/Admin/cambiar-clave', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ Id: usuarioEditandoClaveId, NuevaClave: nuevaClave })
-            });
-
-            if (response.ok) {
-                alert("Contraseña actualizada correctamente.");
-                cerrarModalClave();
-                cargarUsuarios();
-            } else {
-                alert("Error al actualizar la contraseña.");
-            }
-        }
-
-        async function cargarReporteTokens() {
-            const response = await fetch('/api/Admin/reporte-tokens', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                const reporte = await response.json();
-                const tbody = document.querySelector('#tokensTable tbody');
-
-                tbody.innerHTML = reporte.map(r => `
-                        <tr>
-                            <td><strong>${r.usuario}</strong></td>
-                            <td><b style="color: #d13438; font-size: 1.1rem;">${r.totalTokens.toLocaleString()}</b></td>
-                            <td>${r.consultas}</td>
-                            <td>${new Date(r.ultimaActividad).toLocaleString()}</td>
-                        </tr>
-                    `).join('');
+                            <tr>
+                                <td><strong>${u.nombre}</strong></td>
+                                <td><span style="font-family: monospace; background:#f3f2f1; padding:4px 8px; border-radius:4px; font-size: 0.9rem;">${u.clave || '***'}</span></td>
+                                <td><b>${u.rol}</b></td>
+                                <td>
+                                    <span style="background-color: ${u.estado ? '#dff6dd' : '#fde7e9'}; color: ${u.estado ? '#107c10' : '#d13438'}; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">
+                                        ${u.estado ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                </td>
+                                <td>${new Date(u.creado).toLocaleDateString()}</td>
+                                <td>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button onclick="abrirModalRol(${u.id}, '${u.nombre}', '${u.rol}')" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-user-shield"></i> Rol</button>
+                                        <button onclick="abrirModalClave(${u.id}, '${u.nombre}')" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-key"></i> Clave</button>
+                                        <button onclick="cambiarEstado(${u.id}, ${u.estado})" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background-color: ${u.estado ? '#d13438' : '#107c10'}; color: white;">
+                                            <i class="fa-solid ${u.estado ? 'fa-ban' : 'fa-check'}"></i> ${u.estado ? 'Desactivar' : 'Activar'}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
             }
         }
 
@@ -484,10 +550,7 @@
 
             const response = await fetch('/api/Admin/crear-usuario', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ Username: user, Password: pass, Role: role })
             });
 
@@ -501,26 +564,221 @@
             }
         }
 
+        async function cargarReporteTokens() {
+            const response = await fetch('/api/Admin/reporte-tokens', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const reporte = await response.json();
+                const tbody = document.querySelector('#tokensTable tbody');
+                tbody.innerHTML = reporte.map(r => `
+                            <tr>
+                                <td><strong>${r.usuario}</strong></td>
+                                <td><b style="color: #d13438; font-size: 1.1rem;">${r.totalTokens.toLocaleString()}</b></td>
+                                <td>${r.consultas}</td>
+                                <td>${new Date(r.ultimaActividad).toLocaleString()}</td>
+                            </tr>
+                        `).join('');
+            }
+        }
+
+        async function cargarHistorialAuditoria() {
+            try {
+                const response = await fetch('/api/Admin/historial-usuarios', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    datosHistorial = await response.json();
+                    const selectFilter = document.getElementById('userFilter');
+                    selectFilter.innerHTML = '<option value="todos">Todos los usuarios</option>';
+
+                    const usuariosUnicos = [...new Set(datosHistorial.map(d => d.usuarioId))];
+                    usuariosUnicos.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user;
+                        option.textContent = user;
+                        selectFilter.appendChild(option);
+                    });
+
+                    renderTableHistorial(datosHistorial);
+                } else {
+                    document.getElementById('historialTbody').innerHTML = `<tr><td colspan="5" style="text-align:center;">Error al cargar el historial.</td></tr>`;
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        function renderTableHistorial(lista) {
+            const tbody = document.getElementById('historialTbody');
+            tbody.innerHTML = "";
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay consultas registradas.</td></tr>`;
+                return;
+            }
+
+            lista.forEach((item, index) => {
+                const fecha = new Date(item.fechaConsulta).toLocaleString('es-SV', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                const respuestaHtml = marked.parse(item.respuestaIA);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                        <td><strong>${fecha}</strong></td>
+                        <td><span class="user-tag"><i class="fa-solid fa-user"></i> ${item.usuarioId}</span></td>
+                        <td><i class="fa-solid fa-file-pdf" style="color:#a63b3c;"></i> ${item.nombresArchivos}</td>
+                        <td><em>"${item.pregunta}"</em></td>
+                        <td>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button onclick="exportarFilaExcel(${index})" class="btn btn-outline btn-action-download" style="background: var(--excel-green); color: white; border-color: var(--excel-green);">
+                                    <i class="fa-solid fa-file-excel"></i> Excel
+                                </button>
+                                <button onclick="exportarFilaPDF(${index})" class="btn btn-outline btn-action-download" style="background: var(--pdf-red); color: white; border-color: var(--pdf-red);">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF
+                                </button>
+                                <button onclick="togglePreview(${index})" class="btn btn-outline btn-action-download">
+                                    <i class="fa-solid fa-eye"></i> Vista Previa
+                                </button>
+                            </div>
+                            <div id="preview-${index}" class="response-content" style="display: none;">
+                                ${respuestaHtml}
+                            </div>
+                        </td>
+                    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function togglePreview(index) {
+            const container = document.getElementById(`preview-${index}`);
+            container.style.display = container.style.display === "none" ? "block" : "none";
+        }
+
+        // ==================================================================
+        // EXPORTACIÓN A EXCEL (SE MANTIENE IGUAL PORQUE FUNCIONA PERFECTO)
+        // ==================================================================
+        window.exportarFilaExcel = function (index) {
+            const item = datosHistorial[index];
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = marked.parse(item.respuestaIA);
+
+            const table = tempDiv.querySelector('table');
+
+            if (!table) {
+                alert("Este registro no contiene tablas estructuradas. Se descargará un resumen general en formato Excel.");
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet([
+                    ["REPORTE DE CONSULTA INDIVIDUAL - DUCA CHECK PRO"],
+                    ["Usuario", item.usuarioId],
+                    ["Fecha", new Date(item.fechaConsulta).toLocaleString('es-SV')],
+                    ["Instrucción", item.pregunta],
+                    ["Documentos", item.nombresArchivos],
+                    ["", ""],
+                    ["Respuesta General:", item.respuestaIA]
+                ]);
+                XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
+                XLSX.writeFile(wb, `Consulta_IA_${item.usuarioId}.xlsx`);
+                return;
+            }
+
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Retaceo_Compilado" });
+            XLSX.writeFile(wb, `Retaceo_IA_${item.usuarioId}.xlsx`);
+        }
+
+        // ==================================================================
+        // SOLUCIÓN NATIVA E INFALIBLE PARA IMPRESIÓN DE PDF
+        // Activa el cuadro de diálogo del navegador -> Se elige "Guardar como PDF".
+        // ==================================================================
+        window.exportarFilaPDF = function (index) {
+            const item = datosHistorial[index];
+            const pdfArea = document.getElementById('pdfRenderArea');
+            const fecha = new Date(item.fechaConsulta).toLocaleString('es-SV');
+
+            // 1. Armamos el reporte dentro del contenedor invisible
+            pdfArea.innerHTML = `
+                    <div style="border-bottom: 3px solid #0d52a1; padding-bottom: 12px; margin-bottom: 20px;">
+                        <h2 style="font-family: 'Montserrat', sans-serif; color: #092a54; margin: 0; font-size: 1.6rem; font-weight: 800;">REPORTE DE AUDITORÍA IA</h2>
+                        <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #666; font-weight: 600;">DUCA CHECK PRO - GRUPO ASIMEX</p>
+                    </div>
+                    <table class="layout-table">
+                        <tr>
+                            <td style="width: 50%;"><strong>Auditor Encargado:</strong> ${item.usuarioId}</td>
+                            <td style="width: 50%; text-align: right;"><strong>Fecha Ejecución:</strong> ${fecha}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>Documentación Adjunta:</strong> ${item.nombresArchivos}</td>
+                        </tr>
+                    </table>
+                    <div class="info-box">
+                        <strong style="color: #092a54; font-size: 0.95rem; display:block; margin-bottom: 5px;">Instrucción / Prompt Aplicado:</strong>
+                        <span style="font-style: italic; font-size: 0.9rem; color: #333;">"${item.pregunta}"</span>
+                    </div>
+                    <div style="margin-top: 20px; line-height: 1.6; font-size: 0.95rem;">
+                        ${marked.parse(item.respuestaIA)}
+                    </div>
+                `;
+
+            // 2. Renombramos el título de la web temporalmente para que el PDF se descargue con ese nombre
+            const oldTitle = document.title;
+            document.title = `Auditoria_IA_${item.usuarioId}`;
+
+            // 3. ¡LA MAGIA! Ejecutamos la función nativa que activa CSS @media print
+            window.print();
+
+            // 4. Limpiamos y restauramos la página
+            document.title = oldTitle;
+            pdfArea.innerHTML = "";
+        }
+
+        // ==================================================================
+        // RESTO DE FUNCIONES DE ADMINISTRACIÓN
+        // ==================================================================
+        document.getElementById('userFilter').addEventListener('change', (e) => {
+            const seleccion = e.target.value;
+            if (seleccion === 'todos') {
+                renderTableHistorial(datosHistorial);
+            } else {
+                const filtrados = datosHistorial.filter(d => d.usuarioId === seleccion);
+                renderTableHistorial(filtrados);
+            }
+        });
+
+        function abrirModalClave(id, nombre) {
+            usuarioEditandoClaveId = id;
+            document.getElementById('modalPassUserName').innerText = `Usuario: ${nombre}`;
+            document.getElementById('newPassInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+        function cerrarModalClave() {
+            document.getElementById('passwordModal').style.display = 'none';
+            usuarioEditandoClaveId = null;
+        }
+        async function guardarNuevaClave() {
+            if (!usuarioEditandoClaveId) return;
+            const nuevaClave = document.getElementById('newPassInput').value;
+            if (nuevaClave.trim() === "") return alert("La contraseña no puede estar vacía.");
+            const response = await fetch('/api/Admin/cambiar-clave', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ Id: usuarioEditandoClaveId, NuevaClave: nuevaClave })
+            });
+            if (response.ok) {
+                alert("Contraseña actualizada.");
+                cerrarModalClave(); cargarUsuarios();
+            } else alert("Error al actualizar la contraseña.");
+        }
+
         async function cambiarEstado(id, estadoActual) {
             const nuevoEstado = !estadoActual;
-            const confirmacion = confirm(`¿Estás seguro de que deseas ${nuevoEstado ? 'activar' : 'desactivar'} este usuario?`);
-
-            if (!confirmacion) return;
-
+            if (!confirm(`¿Estás seguro de que deseas ${nuevoEstado ? 'activar' : 'desactivar'} este usuario?`)) return;
             const response = await fetch('/api/Admin/cambiar-estado', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ Id: id, Estado: nuevoEstado })
             });
-
-            if (response.ok) {
-                cargarUsuarios();
-            } else {
-                alert("Error al cambiar el estado.");
-            }
+            if (response.ok) cargarUsuarios(); else alert("Error al cambiar el estado.");
         }
 
         function abrirModalRol(id, nombre, rolActual) {
@@ -529,32 +787,21 @@
             document.getElementById('modalRoleSelect').value = rolActual;
             document.getElementById('roleModal').style.display = 'flex';
         }
-
         function cerrarModal() {
             document.getElementById('roleModal').style.display = 'none';
             usuarioEditandoId = null;
         }
-
         async function guardarNuevoRol() {
             if (!usuarioEditandoId) return;
-
             const nuevoRol = document.getElementById('modalRoleSelect').value;
-
             const response = await fetch('/api/Admin/editar-rol', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ Id: usuarioEditandoId, Role: nuevoRol })
             });
-
             if (response.ok) {
-                cerrarModal();
-                cargarUsuarios();
-            } else {
-                alert("Error al actualizar el rol.");
-            }
+                cerrarModal(); cargarUsuarios();
+            } else alert("Error al actualizar el rol.");
         }
 
         function logout() {
@@ -564,6 +811,7 @@
 
         cargarUsuarios();
         cargarReporteTokens();
+        cargarHistorialAuditoria();
     </script>
 </body>
 </html>

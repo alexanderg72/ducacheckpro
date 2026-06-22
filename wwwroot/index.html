@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DUCA CHECK PRO - Grupo ASIMEX</title>
+    <title>DUCA CHECK PRO-Grupo ASIMEX</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -587,6 +587,7 @@
 
             <label><i class="fa-solid fa-bolt"></i> ACCIONES RÁPIDAS</label>
             <button class="preset-btn" data-prompt="NECESITO CUADRICULA EN EXCEL DE LAS FACTURAS,SEGUN EL ORDEN SIGUIENTE, CANTIDAD BULTOS,unidades de venta (el valor en numeros, no tomes en cuenta la columna que dice Medida), CODIGO DE ARTICULO, SOLO DESCRIPCION EN ESPAÑOL, PARTIDA ARANCELARIA A 9 DIGITOS NO PONER PUNTOS, peso total (solo el valor numerico), pais de origen (solo valor abreviado a 2 letras) y precio total (solo valor numerico) ORDENADA POR CELDAS">📊 Retaceo Importaciones</button>
+            <button class="preset-btn" data-prompt="NECESITO CUADRICULA EN EXCEL DE LAS FACTURAS,SEGUN EL ORDEN SIGUIENTE, CANTIDAD BULTOS,unidades de venta (el valor en numeros, no tomes en cuenta la columna que dice Medida), CODIGO DE ARTICULO, SOLO DESCRIPCION EN ESPAÑOL, PARTIDA ARANCELARIA A 9 DIGITOS NO PONER PUNTOS, peso total (solo el valor numerico), pais de origen (solo valor abreviado a 2 letras) y precio total (solo valor numerico) ORDENADA POR CELDAS  EL PESO DAME LA SUMATORIA DE UNIDADES POR PESO DE DESCRIPCION">📊 Retaceo Sistema Logistico y Corporativo</button>
             <button class="preset-btn" data-prompt="NECESITO CUADRICULA EN EXCEL DE LAS FACTURAS, SEGUN EL ORDEN SIGUIENTE, CANTIDAD BULTOS,unidades de venta (el valor en numeros, no tomes en cuenta la columna que dice Medida), CODIGO DE ARTICULO, SOLO DESCRIPCION EN ESPAÑOL, PARTIDA ARANCELARIA A 9 DIGITOS NO PONER PUNTOS, peso total (solo el valor numerico), precio total (solo valor numerico) y pais de origen (solo valor abreviado a 2 letras)EN LETRA MAYUSCUALAS ORDENADA EN UNA TABLA SEGUN COLUMNA Y FILA">📊 Retaceo Pricesmart</button>
             <button class="preset-btn" data-prompt="Haz un resumen ejecutivo de este documento, destacando únicamente las obligaciones, penalizaciones o puntos críticos.">📝 Resumen Ejecutivo</button>
             <button class="preset-btn" data-prompt="Revisa detalladamente este documento en busca de inconsistencias, firmas faltantes, o fechas incongruentes. Genera una tabla con las anomalías encontradas.">⚠️ Auditoría de Anomalías</button>
@@ -810,7 +811,7 @@
                         }
                     }
 
-                    const promptReforzado = question + "\n\n[INSTRUCCIÓN ESTRICTA DEL SISTEMA: Debes entregar los resultados solicitados SIEMPRE como una tabla en formato Markdown puro si se te pidió una tabla, o en texto estructurado. BAJO NINGUNA CIRCUNSTANCIA devuelvas formato JSON.]";
+                    const promptReforzado = question + "\n\n[INSTRUCCIÓN ESTRICTA DEL SISTEMA: Debes entregar los resultados solicitados SIEMPRE como una tabla en formato Markdown puro si se te pidió una tabla, o en texto estructurado,  tambien revisa el Tratado de Libre Comercio actualizado y si hay incongruencias en el Tratado de Libre Comercio  y los documetnos adjuntos y ponlo en aparte lo que encontrastes de ello. BAJO NINGUNA CIRCUNSTANCIA devuelvas formato JSON.],";
                     formData.append('Question', promptReforzado);
 
                     if (loader) loader.style.display = 'block';
